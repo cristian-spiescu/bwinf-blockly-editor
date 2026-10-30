@@ -33,7 +33,7 @@
             "blockly     grid"
         }
 
-        #menubar      {background:#a9d0f7; grid-area: menubar; font-family: sans-serif; font-size: 18px; padding: 5px 10px; display: -ms-grid; display: grid; grid-template-columns: auto auto auto auto auto; -ms-grid-row:1;-ms-grid-column:1; -ms-grid-column-span:2;  -ms-grid-columns: 20% 20% 20% 20% 20%; }
+        #menubar      {background:#a9d0f7; grid-area: menubar; font-family: sans-serif; font-size: 18px; padding: 5px 10px; display: -ms-grid; display: grid; grid-template-columns: auto auto auto auto auto auto; -ms-grid-row:1;-ms-grid-column:1; -ms-grid-column-span:2;  -ms-grid-columns: 16% 16% 16% 16% 16% 16%; }
         #blocklyArea  {grid-area: blockly; -ms-grid-row:2;-ms-grid-column:1; height: calc(100vh - 75px);}
         #grid         {grid-area: grid; margin:0px;  -ms-grid-row:2;-ms-grid-column:2;
           display: -ms-grid;
@@ -43,6 +43,14 @@
         }
 
         textarea {width:100%;height:calc(100% - 2px);resize: none;}
+        #drawing_canvas {
+          width:100%;
+          height:calc(100% - 2px);
+          display:none;
+          background:white;
+          border:1px solid lightgrey;
+          box-sizing:border-box;
+        }
         .textarealabel {
           position:absolute;
           right:20px;
@@ -50,6 +58,7 @@
           font-size:300%;
           font-family:sans-serif;
           color:lightgrey;
+          pointer-events:none;
         }
     </style>
 
@@ -66,6 +75,10 @@
           <option value="genJs">Generiertes Javascript</option>
           <option value="ownJs">Eigenes Javascript</option>
         </select></div>
+        <div>Ausgabe: <select id="outputView">
+          <option value="text">Ausgabefeld</option>
+          <option value="canvas">Canvas</option>
+        </select></div>
         <div><span id="runText">▶ Programm ausführen: </span> <input type="button" value="Ausführen" id="runButton" /></div>
         <div><span id="clearText">□ Textfelder zurücksetzen: </span> <input type="button" value="Zurücksetzen" id="clearButton" /></div>
         <div><span id="saveText">💾 Bausteine speichern:</span> <input type="button" value="Speichern" id="saveButton" /></div>
@@ -80,9 +93,10 @@
         <textarea id="input_area"></textarea>
 
         </div>
-        <div style="position:relative">
-        <div class="textarealabel">Ausgabefeld</div>
+        <div style="position:relative" id="outputPane">
+        <div class="textarealabel" id="outputLabel">Ausgabefeld</div>
         <textarea readonly id="output_area"></textarea>
+        <canvas id="drawing_canvas"></canvas>
         </div>
       </div>
     </div>
@@ -95,6 +109,85 @@
       <block type="read_float"></block>
       <block type="end_of_file"></block>
       <block type="string_to_float"></block>
+    </category>
+    <category name="Canvas" colour="180">
+      <block type="canvas_begin_path"></block>
+      <block type="canvas_move_to">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_line_to">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">200</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_stroke_style">
+        <value name="COLOUR">
+          <shadow type="text">
+            <field name="TEXT">blue</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_line_width">
+        <value name="WIDTH">
+          <shadow type="math_number">
+            <field name="NUM">5</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_stroke"></block>
+      <block type="canvas_arc">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">100</field>
+          </shadow>
+        </value>
+        <value name="RADIUS">
+          <shadow type="math_number">
+            <field name="NUM">50</field>
+          </shadow>
+        </value>
+        <value name="START">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="END">
+          <shadow type="math_number">
+            <field name="NUM">6.28</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_fill_style">
+        <value name="COLOUR">
+          <shadow type="text">
+            <field name="TEXT">red</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_fill"></block>
+      <block type="canvas_close_path"></block>
+      <block type="canvas_clear"></block>
     </category>
     <category name="Logik" colour="210">
       <block type="controls_if"></block>
@@ -500,6 +593,154 @@
       }
     };
 
+    Blockly.Blocks['canvas_begin_path'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Pfad beginnen");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.beginPath()");
+      }
+    };
+
+    Blockly.Blocks['canvas_move_to'] = {
+      init: function() {
+        this.appendValueInput("X")
+            .setCheck("Number")
+            .appendField("gehe zu x");
+        this.appendValueInput("Y")
+            .setCheck("Number")
+            .appendField("y");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.moveTo(x, y)");
+      }
+    };
+
+    Blockly.Blocks['canvas_line_to'] = {
+      init: function() {
+        this.appendValueInput("X")
+            .setCheck("Number")
+            .appendField("Linie zu x");
+        this.appendValueInput("Y")
+            .setCheck("Number")
+            .appendField("y");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.lineTo(x, y)");
+      }
+    };
+
+    Blockly.Blocks['canvas_stroke_style'] = {
+      init: function() {
+        this.appendValueInput("COLOUR")
+            .setCheck("String")
+            .appendField("Linienfarbe");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.strokeStyle = …");
+      }
+    };
+
+    Blockly.Blocks['canvas_line_width'] = {
+      init: function() {
+        this.appendValueInput("WIDTH")
+            .setCheck("Number")
+            .appendField("Linienstärke");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.lineWidth = …");
+      }
+    };
+
+    Blockly.Blocks['canvas_stroke'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("zeichne Linie (stroke)");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.stroke()");
+      }
+    };
+
+    Blockly.Blocks['canvas_arc'] = {
+      init: function() {
+        this.appendValueInput("X")
+            .setCheck("Number")
+            .appendField("Bogen x");
+        this.appendValueInput("Y")
+            .setCheck("Number")
+            .appendField("y");
+        this.appendValueInput("RADIUS")
+            .setCheck("Number")
+            .appendField("Radius");
+        this.appendValueInput("START")
+            .setCheck("Number")
+            .appendField("von");
+        this.appendValueInput("END")
+            .setCheck("Number")
+            .appendField("bis");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.arc(x, y, radius, startAngle, endAngle) — Winkel in Radiant");
+      }
+    };
+
+    Blockly.Blocks['canvas_fill_style'] = {
+      init: function() {
+        this.appendValueInput("COLOUR")
+            .setCheck("String")
+            .appendField("Füllfarbe");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.fillStyle = …");
+      }
+    };
+
+    Blockly.Blocks['canvas_fill'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("fülle Fläche (fill)");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.fill()");
+      }
+    };
+
+    Blockly.Blocks['canvas_close_path'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Pfad schließen");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.closePath()");
+      }
+    };
+
+    Blockly.Blocks['canvas_clear'] = {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Canvas löschen");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("Canvas leeren");
+      }
+    };
+
     var toolbox = document.getElementById("toolbox");
     var blocklyArea = document.getElementById('blocklyArea');
 
@@ -560,6 +801,43 @@
             document.getElementById("output_area").value += val + "\n";
         },
     }
+
+    var canvasEl = document.getElementById('drawing_canvas');
+    var ctx = canvasEl.getContext('2d');
+
+    function resizeCanvas() {
+        var pane = document.getElementById('outputPane');
+        var w = pane.clientWidth;
+        var h = pane.clientHeight;
+        if (w <= 0 || h <= 0) {
+            return;
+        }
+        if (canvasEl.width !== w || canvasEl.height !== h) {
+            canvasEl.width = w;
+            canvasEl.height = h;
+        }
+    }
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    }
+
+    function changeOutputView() {
+        var view = document.getElementById('outputView').value;
+        var isCanvas = view === 'canvas';
+        document.getElementById('output_area').style.display = isCanvas ? 'none' : 'block';
+        canvasEl.style.display = isCanvas ? 'block' : 'none';
+        document.getElementById('outputLabel').textContent = isCanvas ? 'Canvas' : 'Ausgabefeld';
+        if (isCanvas) {
+            resizeCanvas();
+        }
+    }
+    document.getElementById('outputView').addEventListener('change', changeOutputView, false);
+    window.addEventListener('resize', function() {
+        if (document.getElementById('outputView').value === 'canvas') {
+            resizeCanvas();
+        }
+    });
 
     var input = {
        commonRead: function() {
@@ -634,18 +912,73 @@
       return [code, Blockly.JavaScript.ORDER_MEMBER];
     };
 
+    Blockly.JavaScript['canvas_begin_path'] = function(block) {
+      return 'ctx.beginPath();\n';
+    };
+    Blockly.JavaScript['canvas_move_to'] = function(block) {
+      var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+      return 'ctx.moveTo(' + x + ', ' + y + ');\n';
+    };
+    Blockly.JavaScript['canvas_line_to'] = function(block) {
+      var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+      return 'ctx.lineTo(' + x + ', ' + y + ');\n';
+    };
+    Blockly.JavaScript['canvas_stroke_style'] = function(block) {
+      var colour = Blockly.JavaScript.valueToCode(block, 'COLOUR', Blockly.JavaScript.ORDER_ASSIGNMENT) || "'black'";
+      return 'ctx.strokeStyle = ' + colour + ';\n';
+    };
+    Blockly.JavaScript['canvas_line_width'] = function(block) {
+      var width = Blockly.JavaScript.valueToCode(block, 'WIDTH', Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+      return 'ctx.lineWidth = ' + width + ';\n';
+    };
+    Blockly.JavaScript['canvas_stroke'] = function(block) {
+      return 'ctx.stroke();\n';
+    };
+    Blockly.JavaScript['canvas_arc'] = function(block) {
+      var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var radius = Blockly.JavaScript.valueToCode(block, 'RADIUS', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var start = Blockly.JavaScript.valueToCode(block, 'START', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var end = Blockly.JavaScript.valueToCode(block, 'END', Blockly.JavaScript.ORDER_COMMA) || '0';
+      return 'ctx.arc(' + x + ', ' + y + ', ' + radius + ', ' + start + ', ' + end + ');\n';
+    };
+    Blockly.JavaScript['canvas_fill_style'] = function(block) {
+      var colour = Blockly.JavaScript.valueToCode(block, 'COLOUR', Blockly.JavaScript.ORDER_ASSIGNMENT) || "'black'";
+      return 'ctx.fillStyle = ' + colour + ';\n';
+    };
+    Blockly.JavaScript['canvas_fill'] = function(block) {
+      return 'ctx.fill();\n';
+    };
+    Blockly.JavaScript['canvas_close_path'] = function(block) {
+      return 'ctx.closePath();\n';
+    };
+    Blockly.JavaScript['canvas_clear'] = function(block) {
+      return 'clearCanvas();\n';
+    };
+
     var saved_input = "";
 
     function myRunFunction() {
         saved_input =  document.getElementById("input_area").value;
 
         Blockly.JavaScript.addReservedWords('code');
+        Blockly.JavaScript.addReservedWords('ctx');
+        Blockly.JavaScript.addReservedWords('clearCanvas');
           var code = Blockly.JavaScript.workspaceToCode(workspace);
 
           if (document.getElementById('editor').value == "ownJs") {
             code = editor_own.getValue();
           }
 
+          // Show the canvas when the program draws on it.
+          if (/\bctx\b/.test(code) || /\bclearCanvas\b/.test(code)) {
+            document.getElementById('outputView').value = 'canvas';
+            changeOutputView();
+          } else {
+            resizeCanvas();
+          }
 
           console.log(code);
         try {
@@ -659,7 +992,7 @@
     function myClearFunction() {
       document.getElementById('input_area').value = saved_input;
       document.getElementById('output_area').value = "";
-
+      clearCanvas();
     }
     document.getElementById("clearButton").onclick = myClearFunction;
 
