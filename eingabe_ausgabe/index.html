@@ -187,6 +187,30 @@
       </block>
       <block type="canvas_fill"></block>
       <block type="canvas_close_path"></block>
+      <block type="canvas_translate">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="canvas_scale">
+        <value name="X">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="Y">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
       <block type="canvas_clear"></block>
     </category>
     <category name="Logik" colour="210">
@@ -730,6 +754,38 @@
       }
     };
 
+    Blockly.Blocks['canvas_translate'] = {
+      init: function() {
+        this.appendValueInput("X")
+            .setCheck("Number")
+            .appendField("verschiebe um x");
+        this.appendValueInput("Y")
+            .setCheck("Number")
+            .appendField("y");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.translate(x, y) — gilt für alle folgenden Zeichenbefehle");
+      }
+    };
+
+    Blockly.Blocks['canvas_scale'] = {
+      init: function() {
+        this.appendValueInput("X")
+            .setCheck("Number")
+            .appendField("skaliere mit x");
+        this.appendValueInput("Y")
+            .setCheck("Number")
+            .appendField("y");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(180);
+        this.setTooltip("ctx.scale(x, y) — gilt für alle folgenden Zeichenbefehle");
+      }
+    };
+
     Blockly.Blocks['canvas_clear'] = {
       init: function() {
         this.appendDummyInput()
@@ -819,7 +875,14 @@
     }
 
     function clearCanvas() {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+        ctx.restore();
+    }
+
+    function resetCanvasTransform() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
     function changeOutputView() {
@@ -954,6 +1017,16 @@
     Blockly.JavaScript['canvas_close_path'] = function(block) {
       return 'ctx.closePath();\n';
     };
+    Blockly.JavaScript['canvas_translate'] = function(block) {
+      var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+      var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+      return 'ctx.translate(' + x + ', ' + y + ');\n';
+    };
+    Blockly.JavaScript['canvas_scale'] = function(block) {
+      var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '1';
+      var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '1';
+      return 'ctx.scale(' + x + ', ' + y + ');\n';
+    };
     Blockly.JavaScript['canvas_clear'] = function(block) {
       return 'clearCanvas();\n';
     };
@@ -979,6 +1052,9 @@
           } else {
             resizeCanvas();
           }
+
+          // Each run starts with identity transform; translate/scale then apply for later draws.
+          resetCanvasTransform();
 
           console.log(code);
         try {
