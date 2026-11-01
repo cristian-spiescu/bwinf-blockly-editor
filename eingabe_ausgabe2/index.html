@@ -1,0 +1,1590 @@
+<head>
+    <title>BwInf Eingabe_Ausgabe mit Blockly</title>
+    <meta charset="utf-8">
+    <style>
+        table {
+            padding: 0px;
+            margin: 0px;
+            background-color: lightgrey;
+        }
+
+        tbody {
+            padding: 0px;
+            margin: 0px;
+        }
+
+        tr {
+            padding: 0px;
+            margin: 0px;
+            border: none;
+        }
+
+        td {
+            height: 60px;
+            width: 60px;
+            margin: 0px;
+            padding: 0px;
+            border: none;
+            text-align: center;
+            vertical-align: middle;
+            background-color: white;
+        }
+
+        .field {
+            width: 60px;
+        }
+
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        #run {
+            position: fixed;
+            right: 380px;
+            top: 10px;
+            width: 80px;
+            height: 35px;
+            background-color: salmon;
+            border: 1px solid darkred;
+        }
+
+        #clear {
+            position: fixed;
+            right: 290px;
+            top: 10px;
+            width: 80px;
+            height: 35px;
+            background-color: lightgray;
+            border: 1px solid darkgrey;
+        }
+
+        #save {
+            position: fixed;
+            right: 200px;
+            top: 10px;
+            width: 80px;
+            height: 35px;
+            background-color: lightgreen;
+            border: 1px solid darkgreen;
+        }
+
+        #load {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+            width: 180px;
+            height: 35px;
+            background-color: white;
+            border: none;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        #page {
+            height: 100%;
+            background-color: pink;
+            display: grid;
+            grid-template-areas:
+                'header header header header header'
+                'blocklyArea leftdragbar grid rightdragbar rightcol';
+            /* 'blocklyArea leftdragbar ausgabe rightdragbar rightcol'; */
+            grid-template-rows: min-content 9fr;
+            grid-template-columns: 8fr 2px 6fr 1px 0px;
+        }
+
+        /*****************************/
+        #header {
+            background-color: #dae577;
+            overflow: auto;
+            grid-area: header;
+            font-family: sans-serif;
+            font-size: 14px;
+            padding: 5px 10px;
+            /* display: -ms-grid; */
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(7, auto);
+            -ms-grid-row: 1;
+            -ms-grid-column: 1;
+            -ms-grid-column-span: 2;
+            -ms-grid-columns: 20% 20% 20% 20% 20%;
+        }
+
+        #header input,
+        #header select {
+            font-size: 12px;
+            /* Buttons & Dropdown dezenter */
+            padding: 2px 6px;
+        }
+
+        #header input[type="button"],
+        #header select,
+        .custom-file-label {
+            background-color: #f4f4f4;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        #header input[type="button"]:hover,
+        #header select:hover,
+        .custom-file-label:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+
+        #blocklyArea {
+            background-color: #aaaaaa;
+            overflow: auto;
+            grid-area: blocklyArea;
+        }
+
+        #leftdragbar {
+            background-color: black;
+            grid-area: leftdragbar;
+            cursor: ew-resize;
+        }
+
+        #grid {
+            grid-area: grid;
+            margin: 0px;
+            -ms-grid-row: 2;
+            -ms-grid-column: 1;
+            display: grid;
+            height: 100%;
+            min-height: 0;
+            grid-template-rows: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        #grid > div {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        #outputPane {
+            position: relative;
+        }
+
+        #drawing_canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: white;
+            border: 1px solid lightgrey;
+            box-sizing: border-box;
+        }
+
+        /* #eingabe {
+            background-color: #cccccc;
+            overflow: auto;
+            grid-area: eingabe;
+        }
+
+        #ausgabe {
+            background-color: #888888;
+            overflow: auto;
+            grid-area: ausgabe;
+        } */
+
+        #rightdragbar {
+            background-color: black;
+            grid-area: rightdragbar;
+            /* cursor: ew-resize; */
+        }
+
+        #rightcol {
+            background-color: #aaaaaa;
+            overflow: auto;
+            grid-area: rightcol;
+        }
+
+        .textarealabel {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 300%;
+            font-family: sans-serif;
+            color: lightgrey;
+            pointer-events: none;
+        }
+
+        #input_area {
+            font-family: sans-serif;
+            /* gleiche Schrift wie Rest */
+            font-size: 14px;
+            padding: 8px;
+        }
+
+        #input_area::placeholder {
+            font-family: sans-serif;
+            font-size: 14px;
+            color: gray;
+        }
+
+        .file-upload {
+            font-family: sans-serif;
+            font-size: 14px;
+            /* margin: 5px 0 8px 0; */
+            padding: 5px 8 8px 8;
+            ;
+            color: #333;
+            background-color: white;
+        }
+
+        /* 
+        .file-upload input[type="file"] {
+            display: none;
+            /* Versteckt den roten Standard-Input
+         } */
+
+        */ .custom-file-label {
+            display: inline-block;
+            background-color: #f4f4f4;
+            border: 1px solid #aaaaaa;
+            border-radius: 4px;
+            padding: 3px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: normal;
+            color: #000;
+            transition: background-color 0.2s ease;
+        }
+
+        .custom-file-label:hover {
+            background-color: #e0e0e0;
+        }
+
+        .button-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            /* kleiner Abstand */
+        }
+    </style>
+
+    <script src="blockly/blockly_compressed.js"></script>
+    <script src="blockly/blocks_compressed.js"></script>
+    <script src="blockly/javascript_compressed.js"></script>
+    <script src="blockly/msg/js/de.js"></script>
+
+    <script>
+        let isLeftDragging = false;
+        let isRightDragging = false;
+
+        function ResetColumnSizes() {
+            // when page resizes return to default col sizes
+            let page = document.getElementById("pageFrame");
+            page.style.gridTemplateColumns = "2fr 1px 6fr 1px 0px";
+        }
+
+        function SetCursor(cursor) {
+            let page = document.getElementById("page");
+            page.style.cursor = cursor;
+        }
+
+        function StartLeftDrag() {
+            console.log("mouse down");
+            isLeftDragging = true;
+
+            SetCursor("ew-resize");
+        }
+
+        function StartRightDrag() {
+            console.log("mouse down");
+            isRightDragging = true;
+
+            SetCursor("ew-resize");
+        }
+
+        function EndDrag() {
+            console.log("mouse up");
+            isLeftDragging = false;
+            isRightDragging = false;
+
+            SetCursor("auto");
+        }
+
+        function OnDrag(event) {
+            if (isLeftDragging || isRightDragging) {
+                console.log("Dragging");
+                //console.log(event);
+
+                let page = document.getElementById("page");
+                let leftcol = document.getElementById("blocklyArea");
+                let rightcol = document.getElementById("rightcol");
+
+                let leftColWidth = isLeftDragging ? event.clientX : leftcol.clientWidth;
+                let rightColWidth = isRightDragging ? page.clientWidth - event.clientX : rightcol.clientWidth;
+
+                let dragbarWidth = 2;
+
+                let cols = [
+                    leftColWidth,
+                    dragbarWidth,
+                    page.clientWidth - (2 * dragbarWidth) - leftColWidth - rightColWidth,
+                    dragbarWidth,
+                    rightColWidth
+                ];
+
+                let newColDefn = cols.map(c => c.toString() + "px").join(" ");
+
+                console.log(newColDefn);
+                page.style.gridTemplateColumns = newColDefn;
+
+                event.preventDefault()
+                window.dispatchEvent(new Event('resize'));
+
+
+            }
+        }
+    </script>
+</head>
+
+
+<body onresize="ResetColumnSizes()">
+    <div id="page" onmouseup="EndDrag()" onmousemove="OnDrag(event)">
+        <div id="header">
+            <div><select id="editor">
+                    <option value="blocklyArea">Blockly</option>
+                    <option value="genJs">Generiertes Javascript</option>
+                    <option value="ownJs">Eigenes Javascript</option>
+                </select></div>
+            <div>Ausgabe: <select id="outputView">
+                    <option value="text">Ausgabefeld</option>
+                    <option value="canvas">Canvas</option>
+                </select></div>
+            <div class="button-row">
+                <div><span id="runText"></span><input type="button" value="🚀 Ausführen" id="runButton" />
+                </div>
+                <div><span id="clearText"></span> <input type="button" value="🔄 Textfelder zurücksetzen"
+                        id="clearButton" />
+                </div>
+
+                <div><span id="clearBothText"></span>
+                    <input type="button" value="🧹 Textfelder leeren" id="clearBothButton" />
+                </div>
+                <div><span id="saveOutputText"></span>
+                    <input type="button" value="💾 Ausgabe speichern" id="saveOutputButton" />
+                </div>
+                <div><span id="saveText"></span> <input type="button" value="💾 Bausteine speichern" id="saveButton" />
+                </div>
+                <div><span id="loadText">📂 Bausteine öffnen: </span> <input type="file" id="fileButton"
+                        style="max-width:250px" />
+                </div>
+            </div>
+        </div>
+        <div id="blocklyArea"></div>
+        <div id="genJs" style="display:none; font-size: 12pt;"></div>
+        <div id="ownJs" style="display:none; font-size: 12pt;"></div>
+        <div id="leftdragbar" onmousedown="StartLeftDrag()"></div>
+        <!-- <div id="eingabe">
+            Tabs
+        </div>
+        <div id="ausgabe">
+            Tab Pages
+        </div> -->
+        <div id="grid">
+            <div style="position:relative">
+                <div class="textarealabel" style="margin-top: -18px; color: #726b6b;">Eingabefeld</div>
+
+                <div class="file-upload" style="padding-left: 10px;">
+                    <input type="file" id="inputFileLoader" accept=".txt">
+                </div>
+
+                <textarea id="input_area"
+                    placeholder="Du kannst direkt hier schreiben, eine Textdatei hier rein ziehen oder oben eine Datei wählen."></textarea>
+            </div>
+
+
+
+
+            <div style="position:relative" id="outputPane">
+                <div class="textarealabel" style="color: #726b6b" id="outputLabel">Ausgabefeld</div>
+                <textarea readonly id="output_area"></textarea>
+                <canvas id="drawing_canvas"></canvas>
+            </div>
+        </div>
+        <div id="rightdragbar" display-style="none"></div>
+        <div id="rightcol" display-style="none"></div>
+    </div>
+
+    <xml id="toolbox" style="display:none">
+        <category name="Ein-/Ausgabe" colour="#a50101">
+            <block type="write"></block>
+            <block type="read_int"></block>
+            <block type="read_string"></block>
+            <block type="read_float"></block>
+            <block type="end_of_file"></block>
+        </category>
+        <category name="Canvas" colour="180">
+            <block type="canvas_begin_path"></block>
+            <block type="canvas_move_to">
+                <value name="X">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+                <value name="Y">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_line_to">
+                <value name="X">
+                    <shadow type="math_number">
+                        <field name="NUM">200</field>
+                    </shadow>
+                </value>
+                <value name="Y">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_stroke_style">
+                <value name="COLOUR">
+                    <shadow type="text">
+                        <field name="TEXT">blue</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_line_width">
+                <value name="WIDTH">
+                    <shadow type="math_number">
+                        <field name="NUM">5</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_stroke"></block>
+            <block type="canvas_arc">
+                <value name="X">
+                    <shadow type="math_number">
+                        <field name="NUM">100</field>
+                    </shadow>
+                </value>
+                <value name="Y">
+                    <shadow type="math_number">
+                        <field name="NUM">100</field>
+                    </shadow>
+                </value>
+                <value name="RADIUS">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+                <value name="START">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+                <value name="END">
+                    <shadow type="math_number">
+                        <field name="NUM">6.28</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_fill_style">
+                <value name="COLOUR">
+                    <shadow type="text">
+                        <field name="TEXT">red</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_fill"></block>
+            <block type="canvas_close_path"></block>
+            <block type="canvas_translate">
+                <value name="X">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+                <value name="Y">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_scale">
+                <value name="X">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+                <value name="Y">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="canvas_clear"></block>
+        </category>
+        <category name="Umwandeln" colour="#dac221">
+
+            <block type="string_to_float"></block>
+
+            <block type="ASCII">
+                <value name="NUM">
+                    <shadow type="math_number">
+                        <field name="NUM">56</field>
+                    </shadow>
+                </value>
+            </block>
+
+            <block type="ZeichenZuZahl">
+                <value name="VALUE">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+        </category>
+        <category name="Logik" colour="#81b31d">
+            <block type="controls_if"></block>
+            <block type="logic_compare"></block>
+            <block type="logic_operation"></block>
+            <block type="logic_negate"></block>
+            <block type="logic_boolean"></block>
+            <block type="logic_null"></block>
+            <block type="logic_ternary"></block>
+        </category>
+        <category name="Schleifen" colour="#2fb5bd">
+            <block type="controls_repeat_ext">
+                <value name="TIMES">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="controls_whileUntil"></block>
+            <block type="controls_for">
+                <value name="FROM">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+                <value name="TO">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+                <value name="BY">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="controls_forEach"></block>
+            <block type="controls_flow_statements"></block>
+        </category>
+        <category name="Mathematik" colour="#3950a5">
+            <block type="math_number"></block>
+            <block type="math_arithmetic">
+                <value name="A">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+                <value name="B">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_single">
+                <value name="NUM">
+                    <shadow type="math_number">
+                        <field name="NUM">9</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_trig">
+                <value name="NUM">
+                    <shadow type="math_number">
+                        <field name="NUM">45</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_constant"></block>
+            <block type="math_number_property">
+                <value name="NUMBER_TO_CHECK">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_round">
+                <value name="NUM">
+                    <shadow type="math_number">
+                        <field name="NUM">3.1</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_on_list"></block>
+            <block type="math_modulo">
+                <value name="DIVIDEND">
+                    <shadow type="math_number">
+                        <field name="NUM">64</field>
+                    </shadow>
+                </value>
+                <value name="DIVISOR">
+                    <shadow type="math_number">
+                        <field name="NUM">10</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_constrain">
+                <value name="VALUE">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+                <value name="LOW">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+                <value name="HIGH">
+                    <shadow type="math_number">
+                        <field name="NUM">100</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_random_int">
+                <value name="FROM">
+                    <shadow type="math_number">
+                        <field name="NUM">1</field>
+                    </shadow>
+                </value>
+                <value name="TO">
+                    <shadow type="math_number">
+                        <field name="NUM">100</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="math_random_float"></block>
+        </category>
+        <category name="Text" colour="#6638a5">
+            <block type="text"></block>
+            <block type="text_join"></block>
+            <block type="text_append">
+                <value name="TEXT">
+                    <shadow type="text"></shadow>
+                </value>
+            </block>
+            <block type="text_length">
+                <value name="VALUE">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_isEmpty">
+                <value name="VALUE">
+                    <shadow type="text">
+                        <field name="TEXT"></field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_indexOf">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">text</field>
+                    </block>
+                </value>
+                <value name="FIND">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_charAt">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">text</field>
+                    </block>
+                </value>
+            </block>
+            <block type="text_getSubstring">
+                <value name="STRING">
+                    <block type="variables_get">
+                        <field name="VAR">text</field>
+                    </block>
+                </value>
+            </block>
+            <block type="text_changeCase">
+                <value name="TEXT">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_trim">
+                <value name="TEXT">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_print">
+                <value name="TEXT">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="text_prompt_ext">
+                <value name="TEXT">
+                    <shadow type="text">
+                        <field name="TEXT">abc</field>
+                    </shadow>
+                </value>
+            </block>
+        </category>
+        <category name="Listen" colour="#d8892b">
+            <block type="lists_create_with">
+                <mutation items="0"></mutation>
+            </block>
+            <block type="lists_create_with"></block>
+            <block type="lists_repeat">
+                <value name="NUM">
+                    <shadow type="math_number">
+                        <field name="NUM">5</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="lists_length"></block>
+            <block type="lists_isEmpty"></block>
+            <block type="lists_indexOf">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">liste</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getIndex">
+                <value name="VALUE">
+                    <block type="variables_get">
+                        <field name="VAR">liste</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_setIndex">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">liste</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_getSublist">
+                <value name="LIST">
+                    <block type="variables_get">
+                        <field name="VAR">liste</field>
+                    </block>
+                </value>
+            </block>
+            <block type="lists_split">
+                <value name="DELIM">
+                    <shadow type="text">
+                        <field name="TEXT">,</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="lists_sort"></block>
+        </category>
+        <category name="Farbe" colour="#a55b99">
+            <block type="colour_picker"></block>
+            <block type="colour_random"></block>
+            <block type="colour_rgb">
+                <value name="RED">
+                    <shadow type="math_number">
+                        <field name="NUM">100</field>
+                    </shadow>
+                </value>
+                <value name="GREEN">
+                    <shadow type="math_number">
+                        <field name="NUM">50</field>
+                    </shadow>
+                </value>
+                <value name="BLUE">
+                    <shadow type="math_number">
+                        <field name="NUM">0</field>
+                    </shadow>
+                </value>
+            </block>
+            <block type="colour_blend">
+                <value name="COLOUR1">
+                    <shadow type="colour_picker">
+                        <field name="COLOUR">#ff0000</field>
+                    </shadow>
+                </value>
+                <value name="COLOUR2">
+                    <shadow type="colour_picker">
+                        <field name="COLOUR">#3333ff</field>
+                    </shadow>
+                </value>
+                <value name="RATIO">
+                    <shadow type="math_number">
+                        <field name="NUM">0.5</field>
+                    </shadow>
+                </value>
+            </block>
+        </category>
+        <sep></sep>
+        <category name="Variablen" colour="#a5416b" custom="VARIABLE"></category>
+        <category name="Funktionen" colour="#9911a5" custom="PROCEDURE"></category>
+    </xml>
+
+    <script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var editor_gen = ace.edit("genJs");
+        editor_gen.$blockScrolling = Infinity;
+        editor_gen.setReadOnly(true);
+        editor_gen.setTheme("ace/theme/xcode");
+        editor_gen.getSession().setMode("ace/mode/javascript");
+        var editor_own = ace.edit("ownJs");
+        editor_own.$blockScrolling = Infinity;
+        editor_own.setTheme("ace/theme/xcode");
+        editor_own.getSession().setMode("ace/mode/javascript");
+
+        var x = 100;
+        var y = 100;
+        var hash = window.location.hash;
+        if (hash) {
+            var hashlist = hash.substr(1).split(",");
+            if (hashlist.length == 2) {
+                if (hashlist[0] > 0 && hashlist[0] < 10000 && hashlist[1] > 0 && hashlist[1] < 10000) {
+                    x = hashlist[0];
+                    y = hashlist[1];
+                }
+            }
+        }
+
+        Blockly.Blocks['read_int'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("lies Zeile als ganze Zahl");
+                this.setOutput(true, "Number");
+                this.setColour("#c04d4d");
+                this.setTooltip(
+                    "Liest eine Zeile in der Eingabe und gibt eine ganze Zahl zurück (Integer). Gibt 'NaN' zurück, wenn sich die Zeile nicht in eine Zahl umwandeln lässt. Kommazahlen werden abgeschnitten."
+                );
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/823414ddb4282028453282b77cb6ef8511b77c5f/text_lies_zeile.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['read_float'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("lies Zeile als Zahl");
+                this.setOutput(true, "Number");
+                this.setColour("#c04d4d");
+                this.setTooltip(
+                    "Liest eine Zeile in der Eingabe und gibt eine Kommazahl zurück (Float). Gibt 'NaN' zurück, wenn sich die Zeile nicht in eine Kommazahl umwandeln lässt."
+                );
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/823414ddb4282028453282b77cb6ef8511b77c5f/text_lies_zeile.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['read_string'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("lies Zeile als Text");
+                this.setOutput(true, "String");
+                this.setColour("#c04d4d");
+                this.setTooltip("");
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/823414ddb4282028453282b77cb6ef8511b77c5f/text_lies_zeile.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['end_of_file'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Ende der Eingabe");
+                this.setOutput(true, "Boolean");
+                this.setColour("#c04d4d");
+                this.setTooltip("");
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/823414ddb4282028453282b77cb6ef8511b77c5f/text_ende_eingabe.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['write'] = {
+            init: function () {
+                this.appendValueInput("text")
+                    .setCheck(null)
+                    .appendField("schreibe");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour("#a50101");
+                this.setTooltip("");
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/823414ddb4282028453282b77cb6ef8511b77c5f/text_schreibe.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['string_to_int'] = {
+            init: function () {
+                this.appendValueInput("text")
+                    .setCheck("String")
+                    .appendField("Text zu Ganzzahl");
+                this.setOutput(true, "Number");
+                this.setColour("#dac221");
+                this.setTooltip("");
+                this.setHelpUrl("");
+            }
+        };
+
+        Blockly.Blocks['string_to_float'] = {
+            init: function () {
+                this.appendValueInput("text")
+                    .setCheck("String")
+                    .appendField("Text zu Zahl");
+                this.setOutput(true, "Number");
+                this.setColour("#dac221");
+                this.setTooltip(
+                    "Bekommt eine Zeichenkette (String) übergeben und gibt eine Zahl (Float) zurück. Gibt 'NaN' zurück, wenn sich die Zeile nicht in eine Kommazahl umwandeln lässt."
+                );
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/8d9a28fcf91b63e0f55cfeaec9adda9f44079e4e/conv_string_to_float.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['ASCII'] = {
+            init: function () {
+                this.appendValueInput("math_number")
+                    .setCheck("Number")
+                    .appendField("Zahl zu Zeichen");
+                this.setOutput(true, "String");
+                this.setColour("#dac221");
+                this.setTooltip(
+                    "Bekommt eine ganze Zahl übergeben gibt das kodierte Zeichen zurück (Unicode). Siehe Hilfe-Link."
+                );
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/8d9a28fcf91b63e0f55cfeaec9adda9f44079e4e/conv_int_to_ASCII.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['ZeichenZuZahl'] = {
+            init: function () {
+                this.appendValueInput("text")
+                    .setCheck("String")
+                    .appendField("Zeichen zu Zahl");
+                this.setOutput(true, "Number");
+                this.setColour("#dac221");
+                this.setTooltip(
+                    "Bekommt ein Zeichen übergeben gibt die kodierte Dezimalzahl zurück (Unicode). Siehe Hilfe-Link."
+                );
+                this.setHelpUrl(
+                    "https://git.bwinf.de/bwinf/blocklyhelp/-/blob/8d9a28fcf91b63e0f55cfeaec9adda9f44079e4e/conv_ASCII_to_int.md"
+                );
+            }
+        };
+
+        Blockly.Blocks['canvas_begin_path'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Pfad beginnen");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.beginPath()");
+            }
+        };
+
+        Blockly.Blocks['canvas_move_to'] = {
+            init: function () {
+                this.appendValueInput("X")
+                    .setCheck("Number")
+                    .appendField("gehe zu x");
+                this.appendValueInput("Y")
+                    .setCheck("Number")
+                    .appendField("y");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.moveTo(x, y)");
+            }
+        };
+
+        Blockly.Blocks['canvas_line_to'] = {
+            init: function () {
+                this.appendValueInput("X")
+                    .setCheck("Number")
+                    .appendField("Linie zu x");
+                this.appendValueInput("Y")
+                    .setCheck("Number")
+                    .appendField("y");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.lineTo(x, y)");
+            }
+        };
+
+        Blockly.Blocks['canvas_stroke_style'] = {
+            init: function () {
+                this.appendValueInput("COLOUR")
+                    .setCheck("String")
+                    .appendField("Linienfarbe");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.strokeStyle = …");
+            }
+        };
+
+        Blockly.Blocks['canvas_line_width'] = {
+            init: function () {
+                this.appendValueInput("WIDTH")
+                    .setCheck("Number")
+                    .appendField("Linienstärke");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.lineWidth = …");
+            }
+        };
+
+        Blockly.Blocks['canvas_stroke'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("zeichne Linie (stroke)");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.stroke()");
+            }
+        };
+
+        Blockly.Blocks['canvas_arc'] = {
+            init: function () {
+                this.appendValueInput("X")
+                    .setCheck("Number")
+                    .appendField("Bogen x");
+                this.appendValueInput("Y")
+                    .setCheck("Number")
+                    .appendField("y");
+                this.appendValueInput("RADIUS")
+                    .setCheck("Number")
+                    .appendField("Radius");
+                this.appendValueInput("START")
+                    .setCheck("Number")
+                    .appendField("von");
+                this.appendValueInput("END")
+                    .setCheck("Number")
+                    .appendField("bis");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.arc(x, y, radius, startAngle, endAngle) — Winkel in Radiant");
+            }
+        };
+
+        Blockly.Blocks['canvas_fill_style'] = {
+            init: function () {
+                this.appendValueInput("COLOUR")
+                    .setCheck("String")
+                    .appendField("Füllfarbe");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.fillStyle = …");
+            }
+        };
+
+        Blockly.Blocks['canvas_fill'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("fülle Fläche (fill)");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.fill()");
+            }
+        };
+
+        Blockly.Blocks['canvas_close_path'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Pfad schließen");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.closePath()");
+            }
+        };
+
+        Blockly.Blocks['canvas_translate'] = {
+            init: function () {
+                this.appendValueInput("X")
+                    .setCheck("Number")
+                    .appendField("verschiebe um x");
+                this.appendValueInput("Y")
+                    .setCheck("Number")
+                    .appendField("y");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.translate(x, y) — gilt für alle folgenden Zeichenbefehle");
+            }
+        };
+
+        Blockly.Blocks['canvas_scale'] = {
+            init: function () {
+                this.appendValueInput("X")
+                    .setCheck("Number")
+                    .appendField("skaliere mit x");
+                this.appendValueInput("Y")
+                    .setCheck("Number")
+                    .appendField("y");
+                this.setInputsInline(true);
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("ctx.scale(x, y) — gilt für alle folgenden Zeichenbefehle");
+            }
+        };
+
+        Blockly.Blocks['canvas_clear'] = {
+            init: function () {
+                this.appendDummyInput()
+                    .appendField("Canvas löschen");
+                this.setPreviousStatement(true, null);
+                this.setNextStatement(true, null);
+                this.setColour(180);
+                this.setTooltip("Canvas leeren");
+            }
+        };
+
+        var toolbox = document.getElementById("toolbox");
+        var blocklyArea = document.getElementById('blocklyArea');
+
+        var options = {
+            toolbox: toolbox,
+            maxBlocks: Infinity,
+            trashcan: true,
+            css: true,
+            media: 'blockly/media/',
+            sounds: true,
+            oneBasedIndex: true,
+        };
+
+        var workspace = Blockly.inject(blocklyArea, options);
+        Blockly.svgResize(workspace);
+
+        var xml_text = localStorage.getItem('bwinf361j1code');
+        if (xml_text) {
+            var xml = Blockly.Xml.textToDom(xml_text);
+            Blockly.Xml.domToWorkspace(xml, workspace);
+        }
+        var own_code = localStorage.getItem('bwinf361j1code_own');
+        if (own_code) {
+            editor_own.setValue(own_code, 1);
+        }
+
+        function myUpdateFunction(event) {
+            var code = Blockly.JavaScript.workspaceToCode(workspace);
+            editor_gen.setValue(code, 1);
+
+            // Save Blocks
+            var xml = Blockly.Xml.workspaceToDom(workspace);
+            var xml_text = Blockly.Xml.domToText(xml);
+            localStorage.setItem('bwinf361j1code', xml_text);
+            localStorage.setItem('bwinf361j1code_own', editor_own.getValue());
+        }
+        workspace.addChangeListener(myUpdateFunction);
+        editor_own.getSession().on('change', myUpdateFunction);
+
+        var grid = {
+            write: function (x, y, val) {
+                var id = 'f' + x + '_' + y;
+                document.getElementById(id).textContent = val;
+            },
+            read: function (x, y) {
+                var id = 'f' + x + '_' + y;
+                return document.getElementById(id).textContent;
+            },
+            colourise: function (x, y, colour) {
+                var id = 'f' + x + '_' + y;
+                document.getElementById(id).parentNode.style.backgroundColor = colour;
+                document.getElementById(id).style.backgroundColor = colour;
+            }
+        }
+
+        var output_result = "";
+        var output = {
+            write: function (val) {
+                output_result += val + "\n";
+            },
+        }
+
+        var canvasEl = document.getElementById('drawing_canvas');
+        var ctx = canvasEl.getContext('2d');
+
+        function resizeCanvas() {
+            var pane = document.getElementById('outputPane');
+            var w = Math.floor(pane.clientWidth);
+            var h = Math.floor(pane.clientHeight);
+            if (w <= 0 || h <= 0) {
+                return;
+            }
+            // Setting width/height resets drawing state; only do it when size changes.
+            if (canvasEl.width !== w || canvasEl.height !== h) {
+                canvasEl.width = w;
+                canvasEl.height = h;
+            }
+        }
+
+        function clearCanvas() {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+            ctx.restore();
+        }
+
+        function resetCanvasTransform() {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        function changeOutputView() {
+            var view = document.getElementById('outputView').value;
+            var isCanvas = view === 'canvas';
+            document.getElementById('output_area').style.visibility = isCanvas ? 'hidden' : 'visible';
+            canvasEl.style.display = isCanvas ? 'block' : 'none';
+            document.getElementById('outputLabel').textContent = isCanvas ? 'Canvas' : 'Ausgabefeld';
+            if (isCanvas) {
+                resizeCanvas();
+            }
+        }
+        document.getElementById('outputView').addEventListener('change', changeOutputView, false);
+        window.addEventListener('resize', function () {
+            if (document.getElementById('outputView').value === 'canvas') {
+                resizeCanvas();
+            }
+        });
+
+        var saved_input = "";
+        var input_index = 0;
+        var input = {
+            commonRead: function () {
+                var index = saved_input.indexOf('\n', input_index);
+                if (index < 0) {
+                    index = saved_input.length;
+                }
+
+                var result = saved_input.substring(input_index, index);
+                input_index = index + 1;
+                return result;
+            },
+
+            read_string: function () {
+                return this.commonRead();
+            },
+
+            read_int: function () {
+                return parseInt(this.commonRead());
+            },
+
+            read_float: function () {
+                return parseFloat(this.commonRead());
+            },
+
+            is_end_of_file: function () {
+                var index = saved_input.indexOf('\n', input_index);
+
+                return index < 0;
+            },
+        }
+        input.read_integer = input.read_int;
+
+
+        Blockly.JavaScript['write'] = function (block) {
+            var text = Blockly.JavaScript.valueToCode(block, 'text', Blockly.JavaScript.ORDER_NONE);
+            var code = 'output.write(' + text + ');\n';
+            return code;
+        };
+
+        Blockly.JavaScript['read_string'] = function (block) {
+            var code = 'input.read_string()';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+        Blockly.JavaScript['read_int'] = function (block) {
+            var code = 'input.read_int()';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+        Blockly.JavaScript['read_float'] = function (block) {
+            var code = 'input.read_float()';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+        Blockly.JavaScript['end_of_file'] = function (block) {
+            var code = 'input.is_end_of_file()';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+        Blockly.JavaScript['string_to_int'] = function (block) {
+            var text = Blockly.JavaScript.valueToCode(block, 'text', Blockly.JavaScript.ORDER_NONE);
+            var code = 'parseInt(' + text + ')';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+        Blockly.JavaScript['string_to_float'] = function (block) {
+            var text = Blockly.JavaScript.valueToCode(block, 'text', Blockly.JavaScript.ORDER_NONE);
+            var code = 'parseFloat(' + text + ')';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+
+        Blockly.JavaScript['ASCII'] = function (block) {
+            var text = Blockly.JavaScript.valueToCode(block, 'math_number', Blockly.JavaScript.ORDER_NONE);
+            var code = 'String.fromCharCode(' + text + ')';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+
+        Blockly.JavaScript['ZeichenZuZahl'] = function (block) {
+            var text = Blockly.JavaScript.valueToCode(block, 'text', Blockly.JavaScript.ORDER_NONE);
+            var code = text + '.charCodeAt()';
+            return [code, Blockly.JavaScript.ORDER_MEMBER];
+        };
+
+        Blockly.JavaScript['canvas_begin_path'] = function (block) {
+            return 'ctx.beginPath();\n';
+        };
+        Blockly.JavaScript['canvas_move_to'] = function (block) {
+            var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+            return 'ctx.moveTo(' + x + ', ' + y + ');\n';
+        };
+        Blockly.JavaScript['canvas_line_to'] = function (block) {
+            var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+            return 'ctx.lineTo(' + x + ', ' + y + ');\n';
+        };
+        Blockly.JavaScript['canvas_stroke_style'] = function (block) {
+            var colour = Blockly.JavaScript.valueToCode(block, 'COLOUR', Blockly.JavaScript.ORDER_ASSIGNMENT) || "'black'";
+            return 'ctx.strokeStyle = ' + colour + ';\n';
+        };
+        Blockly.JavaScript['canvas_line_width'] = function (block) {
+            var width = Blockly.JavaScript.valueToCode(block, 'WIDTH', Blockly.JavaScript.ORDER_ASSIGNMENT) || '1';
+            return 'ctx.lineWidth = ' + width + ';\n';
+        };
+        Blockly.JavaScript['canvas_stroke'] = function (block) {
+            return 'ctx.stroke();\n';
+        };
+        Blockly.JavaScript['canvas_arc'] = function (block) {
+            var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var radius = Blockly.JavaScript.valueToCode(block, 'RADIUS', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var start = Blockly.JavaScript.valueToCode(block, 'START', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var end = Blockly.JavaScript.valueToCode(block, 'END', Blockly.JavaScript.ORDER_COMMA) || '0';
+            return 'ctx.arc(' + x + ', ' + y + ', ' + radius + ', ' + start + ', ' + end + ');\n';
+        };
+        Blockly.JavaScript['canvas_fill_style'] = function (block) {
+            var colour = Blockly.JavaScript.valueToCode(block, 'COLOUR', Blockly.JavaScript.ORDER_ASSIGNMENT) || "'black'";
+            return 'ctx.fillStyle = ' + colour + ';\n';
+        };
+        Blockly.JavaScript['canvas_fill'] = function (block) {
+            return 'ctx.fill();\n';
+        };
+        Blockly.JavaScript['canvas_close_path'] = function (block) {
+            return 'ctx.closePath();\n';
+        };
+        Blockly.JavaScript['canvas_translate'] = function (block) {
+            var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '0';
+            var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '0';
+            return 'ctx.translate(' + x + ', ' + y + ');\n';
+        };
+        Blockly.JavaScript['canvas_scale'] = function (block) {
+            var x = Blockly.JavaScript.valueToCode(block, 'X', Blockly.JavaScript.ORDER_COMMA) || '1';
+            var y = Blockly.JavaScript.valueToCode(block, 'Y', Blockly.JavaScript.ORDER_COMMA) || '1';
+            return 'ctx.scale(' + x + ', ' + y + ');\n';
+        };
+        Blockly.JavaScript['canvas_clear'] = function (block) {
+            return 'clearCanvas();\n';
+        };
+
+
+        function myRunFunction() {
+            saved_input = document.getElementById("input_area").value;
+            input_index = 0;
+
+            Blockly.JavaScript.addReservedWords('code');
+            Blockly.JavaScript.addReservedWords('ctx');
+            Blockly.JavaScript.addReservedWords('clearCanvas');
+            var code = Blockly.JavaScript.workspaceToCode(workspace);
+
+            if (document.getElementById('editor').value == "ownJs") {
+                code = editor_own.getValue();
+            }
+
+            // Show the canvas when the program draws on it.
+            if (/\bctx\b/.test(code) || /\bclearCanvas\b/.test(code)) {
+                document.getElementById('outputView').value = 'canvas';
+                changeOutputView();
+            } else {
+                resizeCanvas();
+            }
+
+            // Each run starts with identity transform; translate/scale then apply for later draws.
+            resetCanvasTransform();
+
+            console.log(code);
+            try {
+                eval(code);
+            } catch (e) {
+                alert(e);
+            }
+
+            document.getElementById('input_area').value = saved_input.substring(input_index);
+            document.getElementById("output_area").value = output_result;
+        }
+        document.getElementById("runButton").onclick = myRunFunction;
+
+        function myClearFunction() {
+            document.getElementById('input_area').value = saved_input;
+            document.getElementById('output_area').value = "";
+            output_result = "";
+            clearCanvas();
+        }
+        document.getElementById("clearButton").onclick = myClearFunction;
+
+
+        function mySaveFunction() {
+            var xml = Blockly.Xml.workspaceToDom(workspace);
+            var xml_text = Blockly.Xml.domToText(xml);
+            newWindow = window.open("data:application/octet-stream," + encodeURIComponent(xml_text),
+                'programm.blockly.xml');
+        }
+        document.getElementById("saveButton").onclick = mySaveFunction;
+
+
+        function readSingleFile(e) {
+            var file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var xml_text = e.target.result;
+                if (xml_text) {
+                    var xml = Blockly.Xml.textToDom(xml_text);
+                    Blockly.Xml.domToWorkspace(xml, workspace);
+                }
+            };
+            reader.readAsText(file);
+        }
+        document.getElementById('fileButton').addEventListener('change', readSingleFile, false);
+
+
+        function changeEditor(e) {
+            document.getElementById('blocklyArea').style.display = "none";
+            document.getElementById('genJs').style.display = "none";
+            document.getElementById('ownJs').style.display = "none";
+
+            document.getElementById(document.getElementById('editor').value).style.display = "block";
+
+            editor_own.resize();
+            editor_gen.resize();
+            Blockly.svgResize(workspace);
+
+        }
+        document.getElementById('editor').addEventListener('change', changeEditor, false);
+
+        // Speichern des Ausgabefeldes
+        function saveOutputToFile() {
+            const outputText = document.getElementById("output_area").value;
+            const blob = new Blob([outputText], {
+                type: "text/plain"
+            });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "ausgabe.txt";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        document.getElementById("saveOutputButton").onclick = saveOutputToFile;
+
+        // Beide Textfelder leeren
+        function clearBothFunction() {
+            document.getElementById("input_area").value = "";
+            document.getElementById("output_area").value = "";
+            output_result = "";
+            saved_input = "";
+            input_index = 0;
+            clearCanvas();
+        }
+        document.getElementById("clearBothButton").onclick = clearBothFunction;
+
+        // Datei per Button ins Eingabefeld laden
+        document.getElementById("inputFileLoader").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                let text = evt.target.result;
+                if (!text.endsWith("\n")) text += "\n";
+                document.getElementById("input_area").value = text;
+            };
+            reader.readAsText(file);
+        });
+
+        // Drag & Drop für Eingabefeld
+        const inputArea = document.getElementById("input_area");
+        inputArea.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            inputArea.style.border = "2px dashed blue";
+        });
+        inputArea.addEventListener("dragleave", function (e) {
+            e.preventDefault();
+            inputArea.style.border = "";
+        });
+        inputArea.addEventListener("drop", function (e) {
+            e.preventDefault();
+            inputArea.style.border = "";
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    let text = evt.target.result;
+                    if (!text.endsWith("\n")) text += "\n";
+                    inputArea.value = text;
+                };
+                reader.readAsText(file);
+            }
+        });
+    </script>
+</body>
